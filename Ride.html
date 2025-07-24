@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Transport Booking</title>
+    <style>
+        /* Basic Resets & Global Styles */
+        :root {
+            --primary-color: #4A90E2; /* A nice blue */
+            --secondary-color: #50E3C2; /* A complementary green */
+            --text-color: #333;
+            --light-text-color: #666;
+            --background-color: #f0f2f5; /* Light grey background */
+            --card-background: #ffffff;
+            --border-color: #e0e0e0;
+            --shadow-light: rgba(0, 0, 0, 0.08);
+            --shadow-medium: rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--background-color);
+            margin: 0;
+            line-height: 1.6;
+            color: var(--text-color);
+            padding: 20px; /* Add some padding for smaller screens */
+            box-sizing: border-box; /* Include padding in element's total width and height */
+        }
+
+        /* Container for the main booking form */
+        .container {
+            background-color: var(--card-background);
+            padding: 40px;
+            border-radius: 12px; /* Softer rounded corners */
+            box-shadow: 0 8px 25px var(--shadow-light); /* More pronounced shadow */
+            text-align: center;
+            max-width: 450px; /* Limit max width for better readability */
+            width: 100%; /* Ensure it takes full width on small screens */
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            font-size: 2.2em; /* Slightly larger heading */
+            font-weight: 600;
+        }
+
+        /* Styling for select dropdowns */
+        select {
+            width: 100%;
+            padding: 12px 15px; /* More padding */
+            margin-bottom: 20px; /* More space below selects */
+            border: 1px solid var(--border-color);
+            border-radius: 8px; /* Softer border-radius */
+            font-size: 1em;
+            color: var(--light-text-color);
+            background-color: var(--card-background);
+            -webkit-appearance: none; /* Remove default arrow on WebKit browsers */
+            -moz-appearance: none;    /* Remove default arrow on Mozilla browsers */
+            appearance: none;         /* Remove default arrow */
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M2%200L0%202h4zm0%205L0%203h4z%22%2F%3E%3C%2Fsvg%3E'); /* Custom arrow */
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 8px 10px;
+            cursor: pointer;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2); /* Focus ring */
+        }
+
+        /* Styling for the button */
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 14px 25px; /* More padding for a bolder button */
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em; /* Slightly larger font */
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            background-color: #3a7bd2; /* Darker shade on hover */
+            transform: translateY(-2px); /* Slight lift effect */
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        button:active {
+            transform: translateY(0); /* Reset on click */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Fare display (if not using popup) */
+        #fare {
+            margin-top: 25px;
+            font-size: 1.4em; /* Larger fare text */
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        /* Popup Styles */
+        .popup {
+            display: none; /* Hidden by default, shown by JS */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); /* Darker overlay */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px); /* Modern blur effect */
+        }
+
+        .popup-content {
+            background-color: var(--card-background);
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px var(--shadow-medium); /* Stronger shadow for popup */
+            text-align: center;
+            position: relative;
+            max-width: 400px;
+            width: 90%;
+            transform: scale(0.9); /* Start slightly smaller */
+            opacity: 0;
+            animation: fadeInScale 0.3s forwards ease-out; /* Animation for popup appearance */
+        }
+
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 28px; /* Larger close button */
+            font-weight: bold;
+            color: var(--light-text-color);
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .close-button:hover {
+            color: var(--primary-color);
+        }
+
+        #popup-message {
+            font-size: 1.5em; /* Larger message in popup */
+            color: var(--text-color); /* Default text color, will be overridden by JS for success/error */
+            margin-bottom: 0;
+        }
+
+        /* Keyframe for popup animation */
+        @keyframes fadeInScale {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 500px) {
+            .container {
+                padding: 30px 20px;
+                margin: 15px; /* Add some margin around the container */
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            button {
+                padding: 12px 20px;
+                font-size: 1em;
+            }
+
+            select {
+                font-size: 0.95em;
+            }
+
+            .popup-content {
+                padding: 25px;
+            }
+
+            #popup-message {
+                font-size: 1.3em;
+            }
+        }
+    </style>
+</head>
+<body background-color:ffffff>
+    <div class="container">
+        <h1>Book Your Ride</h1>
+        <select id="pickup">
+            <option value="">Select Pickup</option>
+            <option value="Brodipet">Brodipet</option>
+            <option value="Arundelpet">Arundelpet</option>
+            <option value="Lakshmipuram">Lakshmipuram</option>
+            <option value="Railpet">Railpet</option>
+            <option value="SVN Colony">SVN Colony</option>
+            <option value="Kothapeta">Kothapeta</option>
+            <option value="Old Guntur">Old Guntur</option>
+            <option value="AT Agraharam">AT Agraharam</option>
+            <option value="Patnam Bazar">Patnam Bazar</option>
+        </select>
+
+        <select id="drop">
+            <option value="">Select Drop</option>
+            <option value="Brodipet">Brodipet</option>
+            <option value="Arundelpet">Arundelpet</option>
+            <option value="Lakshmipuram">Lakshmipuram</option>
+            <option value="Railpet">Railpet</option>
+            <option value="SVN Colony">SVN Colony</option>
+            <option value="Kothapeta">Kothapeta</option>
+            <option value="Old Guntur">Old Guntur</option>
+            <option value="AT Agraharam">AT Agraharam</option>
+            <option value="Patnam Bazar">Patnam Bazar</option>
+        </select>
+        <select id="rideType">
+            <option value="">Select Ride Type</option>
+            <option value="bike">Bike</option>
+            <option value="auto">Auto</option>
+            <option value="car">Car</option>
+        </select>
+        <button onclick="calculateFare()">Calculate Fare</button>
+        <p id="fare"></p>
+    </div>
+
+    <div id="popup" class="popup">
+        <div class="popup-content">
+            <span class="close-button" onclick="closePopup()">&times;</span>
+            <p id="popup-message"></p>
+        </div>
+    </div>
+
+    <script>
+        // These fare values are ARBITRARY but designed to be more "relatable"
+        // based on estimated relative distances within a typical city/town like Chilakaluripet.
+        // They are NOT based on real-time data or actual market prices.
+        const fareChart = {
+            "Brodipet": {
+                "Arundelpet": 40,
+                "Lakshmipuram": 55,
+                "Railpet": 45,
+                "SVN Colony": 60,
+                "Kothapeta": 70,
+                "Old Guntur": 50,
+                "AT Agraharam": 35,
+                "Patnam Bazar": 55
+            },
+            "Arundelpet": {
+                "Brodipet": 40,
+                "Lakshmipuram": 45,
+                "Railpet": 30, // Shorter distance, lower fare
+                "SVN Colony": 50,
+                "Kothapeta": 45,
+                "Old Guntur": 40,
+                "AT Agraharam": 35,
+                "Patnam Bazar": 40
+            },
+            "Lakshmipuram": {
+                "Brodipet": 55,
+                "Arundelpet": 45,
+                "Railpet": 60,
+                "SVN Colony": 65,
+                "Kothapeta": 40,
+                "Old Guntur": 60,
+                "AT Agraharam": 50,
+                "Patnam Bazar": 45
+            },
+            "Railpet": {
+                "Brodipet": 45,
+                "Arundelpet": 30,
+                "Lakshmipuram": 60,
+                "SVN Colony": 40,
+                "Kothapeta": 50,
+                "Old Guntur": 45,
+                "AT Agraharam": 40,
+                "Patnam Bazar": 35
+            },
+            "SVN Colony": {
+                "Brodipet": 60,
+                "Arundelpet": 50,
+                "Lakshmipuram": 65,
+                "Railpet": 40,
+                "Kothapeta": 55,
+                "Old Guntur": 65,
+                "AT Agraharam": 50,
+                "Patnam Bazar": 45
+            },
+            "Kothapeta": {
+                "Brodipet": 70,
+                "Arundelpet": 45,
+                "Lakshmipuram": 40,
+                "Railpet": 50,
+                "SVN Colony": 55,
+                "Old Guntur": 30, // Closer to Old Guntur
+                "AT Agraharam": 40,
+                "Patnam Bazar": 25 // Very close
+            },
+            "Old Guntur": {
+                "Brodipet": 50,
+                "Arundelpet": 40,
+                "Lakshmipuram": 60,
+                "Railpet": 45,
+                "SVN Colony": 65,
+                "Kothapeta": 30,
+                "AT Agraharam": 25,
+                "Patnam Bazar": 40
+            },
+            "AT Agraharam": {
+                "Brodipet": 35,
+                "Arundelpet": 35,
+                "Lakshmipuram": 50,
+                "Railpet": 40,
+                "SVN Colony": 50,
+                "Kothapeta": 40,
+                "Old Guntur": 25,
+                "Patnam Bazar": 20
+            },
+            "Patnam Bazar": {
+                "Brodipet": 55,
+                "Arundelpet": 40,
+                "Lakshmipuram": 45,
+                "Railpet": 35,
+                "SVN Colony": 45,
+                "Kothapeta": 25,
+                "Old Guntur": 40,
+                "AT Agraharam": 20
+            }
+        };
+
+        function calculateFare() {
+            const pickup = document.getElementById('pickup').value;
+            const drop = document.getElementById('drop').value;
+            const rideType = document.getElementById('rideType').value;
+            const fareDisplay = document.getElementById('fare');
+            const popup = document.getElementById('popup');
+            const popupMessage = document.getElementById('popup-message');
+
+            popupMessage.style.color = getComputedStyle(document.documentElement).getPropertyValue('--text-color');
+
+            if (!pickup || !drop || !rideType) {
+                popupMessage.textContent = "Please select all options.";
+                popupMessage.style.color = 'red';
+                popup.style.display = "flex";
+                return;
+            }
+
+            if (pickup === drop) {
+                popupMessage.textContent = "Pickup and drop-off locations cannot be the same.";
+                popupMessage.style.color = 'orange';
+                popup.style.display = "flex";
+                return;
+            }
+
+            let baseRouteFare = 0;
+
+            if (fareChart[pickup] && fareChart[pickup][drop]) {
+                baseRouteFare = fareChart[pickup][drop];
+            } else if (fareChart[drop] && fareChart[drop][pickup]) {
+                baseRouteFare = fareChart[drop][pickup];
+            } else {
+                popupMessage.textContent = "Fare not available for this route.";
+                popupMessage.style.color = 'red';
+                popup.style.display = "flex";
+                return;
+            }
+
+            let totalFare = baseRouteFare; // Start with the base fare for the route (which we consider Auto fare)
+
+            // Adjust fare based on ride type (Bike, Auto, Car)
+            switch (rideType) {
+                case 'bike':
+                    totalFare *= 0.5; // Bikes are about half the cost of an Auto
+                    break;
+                case 'auto':
+                    totalFare *= 1.0; // Auto is the base fare
+                    break;
+                case 'car':
+                    totalFare *= 1.8; // Cars are significantly more expensive than Autos
+                    break;
+            }
+
+            popupMessage.textContent = `Successfully Booked Your Ride! Estimated Fare: ₹${totalFare.toFixed(2)}`;
+            popupMessage.style.color = getComputedStyle(document.documentElement).getPropertyValue('--primary-color');
+            popup.style.display = "flex";
+        }
+
+        function closePopup() {
+            document.getElementById('popup').style.display = "none";
+        }
+    </script>
+</body>
+</html>
